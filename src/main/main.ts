@@ -113,7 +113,9 @@ const createWindow = async () => {
       nodeIntegration: false,
       contextIsolation: true,
     },
-  });
+  })
+
+  mainWindow.setContentProtection(true);
 
   // Hide from dock on macOS
   if (process.platform === 'darwin') {
