@@ -103,6 +103,7 @@ const createWindow = async () => {
     transparent: true,
     frame: false,
     opacity: 0.7,
+    alwaysOnTop: true,
     skipTaskbar: process.platform === 'win32',
     webPreferences: {
       preload: app.isPackaged
