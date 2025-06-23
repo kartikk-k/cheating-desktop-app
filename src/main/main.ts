@@ -95,14 +95,27 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  // Get screen dimensions
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+  
+  // Calculate window dimensions and position
+  const windowWidth = 400;
+  const windowHeight = screenHeight - 40; // Full height minus 20px padding on top and bottom
+  const windowX = screenWidth - windowWidth - 20; // Right side with 20px padding
+  const windowY = 50; // 20px padding from top
+
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 500,
+    width: windowWidth,
+    height: windowHeight,
+    x: windowX,
+    y: windowY,
     icon: getAssetPath('icon.png'),
     transparent: true,
     frame: false,
-    opacity: 0.7,
+    thickFrame: true,
+    opacity: 1,
     alwaysOnTop: true,
     skipTaskbar: process.platform === 'win32',
     webPreferences: {
