@@ -9,7 +9,14 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, globalShortcut, screen } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  globalShortcut,
+  screen,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -31,13 +38,16 @@ let movementShortcutsRegistered = false; // Track if movement shortcuts are regi
 const getActiveAppBundleId = (): Promise<string | null> => {
   return new Promise((resolve) => {
     const { exec } = require('child_process');
-    exec('osascript -e \'tell application "System Events" to get bundle identifier of first application process whose frontmost is true\'', (error: any, stdout: string) => {
-      if (error) {
-        resolve(null);
-      } else {
-        resolve(stdout.trim());
-      }
-    });
+    exec(
+      'osascript -e \'tell application "System Events" to get bundle identifier of first application process whose frontmost is true\'',
+      (error: any, stdout: string) => {
+        if (error) {
+          resolve(null);
+        } else {
+          resolve(stdout.trim());
+        }
+      },
+    );
   });
 };
 
@@ -45,9 +55,12 @@ const getActiveAppBundleId = (): Promise<string | null> => {
 const activateAppByBundleId = (bundleId: string): Promise<void> => {
   return new Promise((resolve) => {
     const { exec } = require('child_process');
-    exec(`osascript -e 'tell application id "${bundleId}" to activate'`, (error: any) => {
-      resolve();
-    });
+    exec(
+      `osascript -e 'tell application id "${bundleId}" to activate'`,
+      (error: any) => {
+        resolve();
+      },
+    );
   });
 };
 
@@ -105,6 +118,8 @@ const createWindow = async () => {
     opacity: 0.7,
     alwaysOnTop: true,
     skipTaskbar: process.platform === 'win32',
+    vibrancy: process.platform === 'darwin' ? 'under-window' : undefined,
+    visualEffectState: process.platform === 'darwin' ? 'active' : undefined,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
@@ -113,7 +128,7 @@ const createWindow = async () => {
       nodeIntegration: false,
       contextIsolation: true,
     },
-  })
+  });
 
   mainWindow.setContentProtection(true);
 
@@ -173,7 +188,7 @@ const createWindow = async () => {
     if (input.key === 'F12') {
       event.preventDefault();
     }
-    
+
     // Move window with Cmd+Shift+Arrow keys
     if (input.meta && input.shift) {
       if (input.key === 'ArrowUp') {
@@ -207,7 +222,7 @@ const createWindow = async () => {
   // Function to register movement shortcuts
   const registerMovementShortcuts = () => {
     if (movementShortcutsRegistered) return;
-    
+
     globalShortcut.register('CommandOrControl+Shift+Up', () => {
       if (mainWindow) {
         const [x, y] = mainWindow.getPosition();
@@ -236,18 +251,32 @@ const createWindow = async () => {
       }
     });
 
+    globalShortcut.register('CommandOrControl+/', async () => {
+      if (mainWindow && mainWindow.isVisible()) {
+        if (mainWindow.isFocused()) {
+          await activateAppByBundleId(previousAppBundleId as string);
+        } else {
+          previousAppBundleId = await getActiveAppBundleId();
+          mainWindow.show();
+          mainWindow.focus();
+          registerMovementShortcuts();
+        }
+      }
+    });
+
     movementShortcutsRegistered = true;
   };
 
   // Function to unregister movement shortcuts
   const unregisterMovementShortcuts = () => {
     if (!movementShortcutsRegistered) return;
-    
+
     globalShortcut.unregister('CommandOrControl+Shift+Up');
     globalShortcut.unregister('CommandOrControl+Shift+Down');
     globalShortcut.unregister('CommandOrControl+Shift+Left');
     globalShortcut.unregister('CommandOrControl+Shift+Right');
-    
+    globalShortcut.unregister('CommandOrControl+/');
+
     movementShortcutsRegistered = false;
   };
 
@@ -261,7 +290,10 @@ const createWindow = async () => {
         // Unregister movement shortcuts when window is hidden
         unregisterMovementShortcuts();
         // Focus back to the previous app
-        if (previousAppBundleId && previousAppBundleId !== 'com.electron.desktop-daddy') {
+        if (
+          previousAppBundleId &&
+          previousAppBundleId !== 'com.electron.desktop-daddy'
+        ) {
           await activateAppByBundleId(previousAppBundleId);
         }
       } else {
@@ -274,6 +306,20 @@ const createWindow = async () => {
       }
     }
   });
+
+  // Register global shortcut for toggling focus between Electron window and previous app (without hiding)
+  // globalShortcut.register('CommandOrControl+/', async () => {
+  //   if (mainWindow && mainWindow.isVisible()) {
+  //     if (mainWindow.isFocused()) {
+  //       await activateAppByBundleId(previousAppBundleId as string);
+  //     } else {
+  //       previousAppBundleId = await getActiveAppBundleId();
+  //       mainWindow.show();
+  //       mainWindow.focus();
+  //       registerMovementShortcuts();
+  //     }
+  //   }
+  // });
 
   // Register movement shortcuts initially since window will be visible
   registerMovementShortcuts();

@@ -31,7 +31,7 @@ function Hello() {
   }, [isFocused]);
 
   return (
-    <div className="bg-black text-white flex flex-col justify-center items-center h-screen">
+    <div className="flex flex-col justify-center items-center h-screen text-white bg-black/20">
       <h1 className="">Hello World</h1>
       <input type="text" autoFocus ref={inputRef} className='bg-white/30 h-12 w-[400px] rounded-md' />
       <p className="mt-4">Window focused: {isFocused ? 'Yes' : 'No'}</p>
