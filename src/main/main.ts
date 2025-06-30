@@ -1,13 +1,3 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
 import {
   app,
@@ -108,14 +98,28 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+    // Get screen dimensions
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+
+  // Calculate window dimensions and position
+  const windowWidth = 400;
+  const windowHeight = screenHeight - 40; // Full height minus 20px padding on top and bottom
+  const windowX = screenWidth - windowWidth - 20; // Right side with 20px padding
+  const windowY = 50; // 20px padding from top  
+
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 500,
+    width: windowWidth,
+    height: windowHeight,
+    x: windowX,
+    y: windowY,
     icon: getAssetPath('icon.png'),
     transparent: true,
+    
     frame: false,
-    opacity: 0.7,
+    roundedCorners: true,
+
     alwaysOnTop: true,
     skipTaskbar: process.platform === 'win32',
     vibrancy: process.platform === 'darwin' ? 'under-window' : undefined,
@@ -130,7 +134,7 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.setContentProtection(true);
+  // mainWindow.setContentProtection(true);
 
   // Hide from dock on macOS
   if (process.platform === 'darwin') {
@@ -220,62 +224,62 @@ const createWindow = async () => {
   });
 
   // Function to register movement shortcuts
-  const registerMovementShortcuts = () => {
-    if (movementShortcutsRegistered) return;
+  // const registerMovementShortcuts = () => {
+  //   if (movementShortcutsRegistered) return;
 
-    globalShortcut.register('CommandOrControl+Shift+Up', () => {
-      if (mainWindow) {
-        const [x, y] = mainWindow.getPosition();
-        mainWindow.setPosition(x, y - 50); // Move window up by 50 pixels
-      }
-    });
+  //   globalShortcut.register('CommandOrControl+Shift+Up', () => {
+  //     if (mainWindow) {
+  //       const [x, y] = mainWindow.getPosition();
+  //       mainWindow.setPosition(x, y - 50); // Move window up by 50 pixels
+  //     }
+  //   });
 
-    globalShortcut.register('CommandOrControl+Shift+Down', () => {
-      if (mainWindow) {
-        const [x, y] = mainWindow.getPosition();
-        mainWindow.setPosition(x, y + 50); // Move window down by 50 pixels
-      }
-    });
+  //   globalShortcut.register('CommandOrControl+Shift+Down', () => {
+  //     if (mainWindow) {
+  //       const [x, y] = mainWindow.getPosition();
+  //       mainWindow.setPosition(x, y + 50); // Move window down by 50 pixels
+  //     }
+  //   });
 
-    globalShortcut.register('CommandOrControl+Shift+Left', () => {
-      if (mainWindow) {
-        const [x, y] = mainWindow.getPosition();
-        mainWindow.setPosition(x - 50, y); // Move window left by 50 pixels
-      }
-    });
+  //   globalShortcut.register('CommandOrControl+Shift+Left', () => {
+  //     if (mainWindow) {
+  //       const [x, y] = mainWindow.getPosition();
+  //       mainWindow.setPosition(x - 50, y); // Move window left by 50 pixels
+  //     }
+  //   });
 
-    globalShortcut.register('CommandOrControl+Shift+Right', () => {
-      if (mainWindow) {
-        const [x, y] = mainWindow.getPosition();
-        mainWindow.setPosition(x + 50, y); // Move window right by 50 pixels
-      }
-    });
+  //   globalShortcut.register('CommandOrControl+Shift+Right', () => {
+  //     if (mainWindow) {
+  //       const [x, y] = mainWindow.getPosition();
+  //       mainWindow.setPosition(x + 50, y); // Move window right by 50 pixels
+  //     }
+  //   });
 
-    globalShortcut.register('CommandOrControl+/', async () => {
-      if (mainWindow && mainWindow.isVisible()) {
-        if (mainWindow.isFocused()) {
-          await activateAppByBundleId(previousAppBundleId as string);
-        } else {
-          previousAppBundleId = await getActiveAppBundleId();
-          mainWindow.show();
-          mainWindow.focus();
-          registerMovementShortcuts();
-        }
-      }
-    });
+    // globalShortcut.register('CommandOrControl+/', async () => {
+    //   if (mainWindow && mainWindow.isVisible()) {
+    //     if (mainWindow.isFocused()) {
+    //       await activateAppByBundleId(previousAppBundleId as string);
+    //     } else {
+    //       previousAppBundleId = await getActiveAppBundleId();
+    //       mainWindow.show();
+    //       mainWindow.focus();
+    //       registerMovementShortcuts();
+    //     }
+    //   }
+    // });
 
-    movementShortcutsRegistered = true;
-  };
+    // movementShortcutsRegistered = true;
+  // };
 
   // Function to unregister movement shortcuts
   const unregisterMovementShortcuts = () => {
     if (!movementShortcutsRegistered) return;
 
-    globalShortcut.unregister('CommandOrControl+Shift+Up');
-    globalShortcut.unregister('CommandOrControl+Shift+Down');
-    globalShortcut.unregister('CommandOrControl+Shift+Left');
-    globalShortcut.unregister('CommandOrControl+Shift+Right');
-    globalShortcut.unregister('CommandOrControl+/');
+    // globalShortcut.unregister('CommandOrControl+Shift+Up');
+    // globalShortcut.unregister('CommandOrControl+Shift+Down');
+    // globalShortcut.unregister('CommandOrControl+Shift+Left');
+    // globalShortcut.unregister('CommandOrControl+Shift+Right');
+    // globalShortcut.unregister('CommandOrControl+/');
 
     movementShortcutsRegistered = false;
   };
@@ -302,27 +306,14 @@ const createWindow = async () => {
         mainWindow.show();
         mainWindow.focus();
         // Register movement shortcuts when window is shown
-        registerMovementShortcuts();
+        // registerMovementShortcuts();
       }
     }
   });
 
-  // Register global shortcut for toggling focus between Electron window and previous app (without hiding)
-  // globalShortcut.register('CommandOrControl+/', async () => {
-  //   if (mainWindow && mainWindow.isVisible()) {
-  //     if (mainWindow.isFocused()) {
-  //       await activateAppByBundleId(previousAppBundleId as string);
-  //     } else {
-  //       previousAppBundleId = await getActiveAppBundleId();
-  //       mainWindow.show();
-  //       mainWindow.focus();
-  //       registerMovementShortcuts();
-  //     }
-  //   }
-  // });
 
   // Register movement shortcuts initially since window will be visible
-  registerMovementShortcuts();
+  // registerMovementShortcuts();
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line

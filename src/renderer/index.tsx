@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 
 const container = document.getElementById('root') as HTMLElement;
+container.style.borderRadius = '10px';
 const root = createRoot(container);
 root.render(<App />);
 
